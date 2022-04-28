@@ -5,7 +5,7 @@ library(data.table)
 library(sas7bdat)
 select<-dplyr::select
 ## Open the data
-deaths_raw<-fread("data/DEFUNCIONES_FUENTE_DEIS_2016_2021_02092021/DEFUNCIONES_FUENTE_DEIS_2016_2021_02092021.csv", 
+deaths_raw<-fread("analisis/data/DEFUNCIONES_FUENTE_DEIS_2016_2021_02092021/DEFUNCIONES_FUENTE_DEIS_2016_2021_02092021.csv", 
       header = FALSE, encoding = "Latin-1") %>% 
   ##Rename the cols
   rename(ANO_DEF=V1, FECHA_DEF=V2, GLOSA_SEXO=V3,EDAD_TIPO=V4,
@@ -113,10 +113,10 @@ epi_weeks<-bind_rows(epi_weeks2020, epi_weeks2021 %>% filter(epi_week!=53)) %>%
 epi_weeks %>% print(n=100)
 
 
-cw<-read.sas7bdat("data/salurbal/clcom_salurbal_11_4_19.sas7bdat") %>% 
+cw<-read.sas7bdat("analisis/data/salurbal/clcom_salurbal_11_4_19.sas7bdat") %>% 
   select(SALID1, SALID2, comuna=L2LOCALID18) %>% 
   filter(!is.na(SALID2))
-load("data/salurbal/l1s.RData")
+load("analisis/data/salurbal/l1s.RData")
 cw<-left_join(cw, l1s %>% select(SALID1, city_link)) %>% 
   mutate(comuna=as.numeric(comuna))
 deaths_raw<-full_join(deaths_raw, cw) %>% 
@@ -126,7 +126,7 @@ deaths<-full_join(deaths, cw) %>%
   mutate(salurbal=!is.na(SALID2)) %>% 
   ungroup()
 
-popl2<-fread("data/ine_estimaciones-y-proyecciones-2002-2035_base-2017_comunas0381d25bc2224f51b9770a705a434b74.csv") %>% 
+popl2<-fread("analisis/data/ine_estimaciones-y-proyecciones-2002-2035_base-2017_comunas0381d25bc2224f51b9770a705a434b74.csv") %>% 
   select(comuna=Comuna, sex=`Sexo (1=Hombre 2=Mujer)`, Age=Edad,`Poblacion 2016`:`Poblacion 2021`) %>% 
   gather(year, pop, -comuna, -sex, -Age) %>% 
   mutate(year=as.numeric(sub("Poblacion ", "", year)),
@@ -145,31 +145,37 @@ popl1<-popl2 %>% full_join(cw %>% select(SALID2, SALID1)) %>%
   group_by(year, SALID1, sex, edad_cat) %>% 
   summarise(pop=sum(pop))
 
-sec<-fread("data/salurbal/SEC_INDEXSCORES_L2_02112021.csv") %>% 
+sec<-fread("analisis/data/salurbal/SEC_INDEXSCORES_L2_09152021.csv") %>% 
   filter(YEAR==2017, ISO2=="CL") %>% 
   select(SALID2, educ2=CNSSE3_L2)
-sec2<-fread("data/salurbal/SEC_Census_L2_06232021.csv") %>% 
+sec2<-fread("analisis/data/salurbal/SEC_Census_L2_06232021.csv") %>% 
   filter(YEAR==2017, ISO2=="CL") %>% 
-  select(SALID2, crowd=CNSCROWD25BRL2, educ=CNSMINUN_L2)
-sec<-full_join(sec, sec2)
-secl1<-fread("data/salurbal/SEC_INDEXSCORES_L1AD_02112021.csv") %>% 
+  select(SALID2, crowd=CNSCROWD25BRL2, educ=CNSMINUN_L2, educ_hs=CNSMINHS_L2)
+sec3<-fread("analisis/data/salurbal/SEC_Survey_L2_09212020.csv") %>% 
+  filter(YEAR_POV==2015, ISO2=="CL") %>% 
+  select(SALID2, pov=SECPOVL2)
+sec<-full_join(sec, sec2) %>% full_join(sec3)
+secl1<-fread("analisis/data/salurbal/SEC_INDEXSCORES_L1AD_09152021.csv") %>% 
   filter(YEAR==2017, ISO2=="CL") %>% 
   select(SALID1, educ2=CNSSE3_L1AD)
-secl12<-fread("data/salurbal/SEC_Census_L1AD_06232021.csv") %>% 
+secl12<-fread("analisis/data/salurbal/SEC_Census_L1AD_06232021.csv") %>% 
   filter(YEAR==2017, ISO2=="CL") %>% 
-  select(SALID1, crowd=CNSCROWD25BRL1AD, educ=CNSMINUN_L1AD)
-secl1<-full_join(secl1, secl12)
+  select(SALID1, crowd=CNSCROWD25BRL1AD, educ=CNSMINUN_L1AD, educ_hs=CNSMINHS_L1AD)
+secl13<-fread("analisis/data/salurbal/SEC_Survey_L1AD_09212020.csv") %>% 
+  filter(ISO2=="CL") %>% 
+  select(SALID1, pov=SECPOVL1AD)
+secl1<-full_join(secl1, secl12) %>% full_join(secl13)
 
-bec<-fread("data/salurbal/BEC_L2_20210104.csv") %>% 
+bec<-fread("analisis/data/salurbal/BEC_L2_20210104.csv") %>% 
   filter(ISO2=="CL") %>% 
   select(SALID1, SALID2, popdens=BECPOPDENS2020L2, BECTPOP2020L2)
-ap<-fread("data/salurbal/APSL2_09022021.csv") %>% 
+ap<-fread("analisis/data/salurbal/APSL2_09022021.csv") %>% 
   filter(ISO2=="CL", YEAR==2018) %>% 
   select(SALID2, ap=APSPM25POPWTL2)
-becl1<-fread("data/salurbal/BEC_L1AD_20210104.csv") %>% 
+becl1<-fread("analisis/data/salurbal/BEC_L1AD_20210104.csv") %>% 
   filter(ISO2=="CL") %>% 
-  select(SALID1, popdens=BECPOPDENS2020L1AD, BECTPOP2020L1AD)
-apl1<-fread("data/salurbal/APSL1AD_09022021.csv") %>% 
+  select(SALID1, popdens=BECPOPDENS2020L1AD, BECTPOP2020L1AD) 
+apl1<-fread("analisis/data/salurbal/APSL1AD_09022021.csv") %>% 
   filter(ISO2=="CL", YEAR==2018) %>% 
   select(SALID1, ap=APSPM25POPWTL1AD)
 # create % 60+ in 2020
@@ -200,7 +206,7 @@ exposures_l2<-full_join(bec, ap) %>%
 exposures_l1<-full_join(becl1, apl1) %>% 
   full_join(secl1) %>% left_join(pop60l1)
 exposuresl1<-exposures_l1 %>% 
-  mutate(city_size=BECTPOP2020L1AD,
+  mutate(city_size=log2(BECTPOP2020L1AD),
          popdens_tert=as.numeric(cut(popdens, 
                                      breaks=quantile(popdens, probs=seq(0, 1, by=1/3)), include.lowest=T)),
          ap_tert=as.numeric(cut(ap, 
@@ -255,4 +261,4 @@ region_cw<-deaths_raw %>% filter(!is.na(SALID2), !duplicated(SALID2)) %>%
               filter(!is.na(comuna)))
 
 # save everything
-save(deaths_raw, deaths, popl1, popl2, exposuresl1, exposuresl2, epi_weeks,region_cw, file="clean_rdata.rdata")
+save(deaths_raw, deaths, popl1, popl2, exposuresl1, exposuresl2, epi_weeks,region_cw, file="analisis/clean_rdata.rdata")

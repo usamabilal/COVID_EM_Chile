@@ -10,7 +10,7 @@ library(ggspatial)
 library(rnaturalearthdata)
 library(rmapshaper)
 library(classInt)
-load("analisis/clean_models.rdata")
+load("clean_models.rdata")
 select<-dplyr::select
 # figure settings
 date_limits<-ymd(c("2020-01-01", "2021-07-15"))
@@ -125,7 +125,7 @@ t1<-t1 %>% left_join(bind_rows(t1_overall, t1_salurbal, t1_sex, t1_age) %>%
                               pop=format(pop, nsmall=2, digits=2))) %>% 
   mutate_all(~replace_na(., ""))
 t1
-write_csv(t1, file="analisis/results/table1.csv")
+write_csv(t1, file="results/table1.csv")
 
 # some numbers for results
 deaths_raw %>%
@@ -212,7 +212,7 @@ deaths_raw %>%
       #caption = "*First case detected on week 11",
       y="Mortality Rate per 100,000", x="", color="")+
     facet_wrap(~salurbal)
-  ggsave("analisis/results/Appendix_Fig1.pdf", 
+  ggsave("results/Appendix_Fig1.pdf", 
          height = 6, width = 10, scale = 1)
   
   ## sex Rates
@@ -256,7 +256,7 @@ deaths_raw %>%
       #caption = "*First case detected on week 11",
       y="Mortality Rate per 100,000", x="", color="")+
     facet_wrap(~sex)
-  ggsave("analisis/results/Appendix_Fig2.pdf", 
+  ggsave("results/Appendix_Fig2.pdf", 
          height = 6, width = 10, scale = 1)
   ## edad_cat Rates
   data_edad_cat<-deaths %>%
@@ -319,7 +319,7 @@ deaths_raw %>%
       y="Mortality Rate per 100,000", x="", color="")+
     facet_wrap(~edad_cat)
   
-  ggsave("analisis/results/Appendix_Fig3.pdf", 
+  ggsave("results/Appendix_Fig3.pdf", 
           arrangeGrob(grobs=list(af4a, af4b)),
          height = 10, width = 15, scale = 1)
   
@@ -369,7 +369,7 @@ ggplot(cumulative_week, aes(x=date, y=cum_excess))+
   scale_color_brewer(type="qual", palette=6 , name="")+
   guides(color=guide_legend(nrow=3))+
   theme_k + theme(legend.position=c(.4, .8),legend.background = element_blank())
-ggsave("analisis/results/Figure1.pdf", 
+ggsave("results/Figure1.pdf", 
        height = 7.5, width = 11, scale = 1)
 
 
@@ -429,7 +429,7 @@ ggplot(excess_2020, aes(x=city_link_num, y=relexcess)) +
   guides(size=F)+
   labs(x="", y="Relative Excess Mortality (%)")+
   theme_k + theme(axis.text.x = element_text(color="black", size=fontsize-2))
-ggsave("analisis/results/figure2.pdf", width=25, height=7.5)
+ggsave("results/figure2.pdf", width=25, height=7.5)
 
 # with absolute excess
 excess_2020$city_link<-factor(excess_2020$city_link, levels=unique(excess_2020_l1 %>% arrange(macrozona, absexcess) %>% pull(city_link)))
@@ -457,7 +457,7 @@ ggplot(excess_2020, aes(x=city_link_num, y=absexcess*100000)) +
   guides(size=F)+
   labs(x="", y="Absolute Excess Mortality (excess deaths/100,000)")+
   theme_k + theme(axis.text.x = element_text(color="black", size=fontsize-2))
-ggsave("analisis/results/figure2_absolute.pdf", width=25, height=7.5)
+ggsave("results/figure2_absolute.pdf", width=25, height=7.5)
 
 ggplot(excess_2020_l2, aes(x=absexcess*100000, y=relexcess)) +
   stat_smooth(method="lm", se=F, lty=2, color="black")+
@@ -469,7 +469,7 @@ ggplot(excess_2020_l2, aes(x=absexcess*100000, y=relexcess)) +
   guides(size=F)+
   labs(y="Relative Excess Mortality (%)", x="Absolute Excess Mortality (excess deaths/100,000)")+
   theme_k + theme(axis.text.x = element_text(color="black", size=fontsize-2))
-ggsave("analisis/results/Appendix_Fig5.pdf", width=12, height=10)
+ggsave("results/Appendix_Fig5.pdf", width=12, height=10)
 excess_2020_l2 %>% filter(absexcess>150/100000, relexcess>.75)
 ggplot(excess_2020_l2, aes(x=fit/pop*100000, y=relexcess)) +
   stat_smooth(method="lm", se=F, lty=2, color="black")+
@@ -481,7 +481,7 @@ ggplot(excess_2020_l2, aes(x=fit/pop*100000, y=relexcess)) +
   guides(size=F)+
   labs(y="Relative Excess Mortality (%)", x="2016-2019 Crude Mortality Rate (per 100,000)")+
   theme_k + theme(axis.text.x = element_text(color="black", size=fontsize-2))
-ggsave("analisis/results/Appendix_Fig6.pdf", width=12, height=10)
+ggsave("results/Appendix_Fig6.pdf", width=12, height=10)
 
 af5a<-ggplot(excess_2020_l2, aes(x=absexcess*100000, y=relexcess)) +
   stat_smooth(method="lm", se=F, lty=2, color="black")+
@@ -517,7 +517,7 @@ af5c<-ggplot(excess_2020_l2, aes(x=fit/pop*100000, y=absexcess*100000)) +
        title="Baseline Mortaltiy vs Absolute Excess Mortality")+
   theme_k + theme(axis.text.x = element_text(color="black", size=fontsize-2))
 pall<-arrangeGrob(grobs=list(af5a, af5b, af5c), ncol=3)
-ggsave("analisis/results/Appendix_Fig5_optionb.pdf", pall, width=20, height=7)
+ggsave("results/Appendix_Fig5_optionb.pdf", pall, width=20, height=7)
 
 
 
@@ -543,13 +543,16 @@ excess_macrozona %>%
   arrange(macrozona, epi_week) %>% 
   print(n=50)
 macro_total<-excess_macrozona %>% 
-  left_join(epi_weeks) %>% 
   filter(year>=2020) %>% 
+  arrange(epi_week) %>% 
   group_by(macrozona) %>% 
-  summarise(excess=sum(excess),
-            fit=sum(fit)) %>% 
+  mutate(fit=cumsum(fit),
+         deaths=cumsum(counts),
+         excess=deaths-fit) %>% 
   mutate(excess_rel_total=excess/fit,
-         excess=paste0("Total Relative\nExcess Mortality=", round(excess_rel_total*100, digits=1), "%")) 
+         excess=paste0("Total Relative\nExcess Mortality=", round(excess_rel_total*100, digits=1), "%")) %>% 
+  filter(epi_week==26&year==2021)
+
 
 excess_macrozona %>% left_join(region_cw) %>% 
   filter(year>=2020) %>% 
@@ -568,7 +571,7 @@ excess_macrozona %>% left_join(region_cw) %>%
   guides(fill=F)+
   facet_wrap(~macrozona, nrow=1)+
   theme_k 
-ggsave(filename="analisis/results/figure3.pdf", width=15, height=5)
+ggsave(filename="results/figure3.pdf", width=15, height=5)
 
 # pooling to get some data for discussion
 excess_macrozona %>% group_by(year, epi_week) %>% 
@@ -633,7 +636,7 @@ m2<-ggplot(data = world) +
         legend.title=element_text(size=14, face="bold"),
         legend.position="right")
 
-ggsave("analisis/results/Appendix_Fig7.pdf", arrangeGrob(grobs=list(m1, m2), ncol=2),width=10, height=10)
+ggsave("results/Appendix_Fig7.pdf", arrangeGrob(grobs=list(m1, m2), ncol=2),width=10, height=10)
 # 
 
 
@@ -737,7 +740,7 @@ t2<-bind_rows(t2_l1, t2_l2) %>%
   rename(unadjusted=coef1, adjusted=coef2)
 
 t2
-t2 %>% write_csv("analisis/results/table2.csv")
+t2 %>% write_csv("results/table2.csv")
 # saving relative table
 t2_rel<-t2
 
@@ -808,12 +811,12 @@ t2<-bind_rows(t2_l1, t2_l2) %>%
   rename(unadjusted=coef1, adjusted=coef2)
 
 t2
-t2 %>% write_csv("analisis/results/table2_absolute.csv")
+t2 %>% write_csv("results/table2_absolute.csv")
 # saving abs table
 t2_abs<-t2
 full_join(t2_rel %>% select(santiago, type, sd, relative=adjusted),
           t2_abs %>% select(santiago, type, sd, absolute=adjusted)) %>% 
-  write_csv("analisis/results/table2_combined.csv")
+  write_csv("results/table2_combined.csv")
 
 # bootstrap
 excess_l1_expo_bs<-excess_l1_bs %>% 
@@ -959,7 +962,7 @@ f8<-arrangeGrob(grobs=list(f8_rel+guides(fill="none", color="none"),
             ncol=2)
 f8<-arrangeGrob(grobs=list(f8, legend), ncol=1, heights=c(15, 1))
 
-ggsave(filename="analisis/results/Appendix_Fig8.pdf", f8, width=15, height=8)
+ggsave(filename="results/Appendix_Fig8.pdf", f8, width=15, height=8)
 # and table
 t2_l1_bs_b %>% select(-estimate, -lci, -uci) %>%  
   mutate(sd=ifelse(type=="Population Density",
@@ -973,7 +976,7 @@ t2_l1_bs_b %>% select(-estimate, -lci, -uci) %>%
            T ~ "ERROR")) %>% 
   pivot_wider(id_cols=-model, names_from=model, values_from=coef) %>% 
   select(santiago, type, sd, unadjusted=unadj, adjusted=adj) %>% 
-  write_csv("analisis/results/Appendix_table2.csv")
+  write_csv("results/Appendix_table2.csv")
 
 # bootstrap L2
 # we were not able to bootstrap all units (10 missing)
@@ -1132,7 +1135,7 @@ f9<-arrangeGrob(grobs=list(f8_rel+guides(fill="none", color="none"),
                 ncol=1)
 f9<-arrangeGrob(grobs=list(f9, legend), ncol=1, heights=c(15, 1))
 
-ggsave(filename="analisis/results/Appendix_Fig8l2.pdf", f9, width=12, height=8)
+ggsave(filename="results/Appendix_Fig8l2.pdf", f9, width=12, height=8)
 # and table
 t2_l2_bs_b %>% select(-estimate, -lci, -uci) %>%  
   mutate(sd=ifelse(type=="Population Density",
@@ -1146,7 +1149,7 @@ t2_l2_bs_b %>% select(-estimate, -lci, -uci) %>%
            T ~ "ERROR")) %>% 
   pivot_wider(id_cols=-model, names_from=model, values_from=coef) %>% 
   select(santiago, type, sd, unadjusted=unadj, adjusted=adj) %>% 
-  write_csv("analisis/results/Appendix_table2l2.csv")
+  write_csv("results/Appendix_table2l2.csv")
 
 
 
@@ -1176,7 +1179,7 @@ ggplot(f4_data, aes(x=value, y=relexcess)) +
              labeller = labeller(type = label_wrap_gen(35)))+
   guides(size=F)+
   theme_k  + theme(strip.placement = "outside")
-ggsave(filename="analisis/results/figure4.pdf", width=17, height=12)
+ggsave(filename="results/figure4.pdf", width=17, height=12)
 
 f5_data<-excess_l2_expo %>% 
   mutate(type=factor(type, levels=c("Educational Attainment (University)", 
@@ -1206,7 +1209,7 @@ f5<-f5_data %>% group_by(santiago) %>%
       theme_k  + theme(strip.placement = "outside")
   })
 f5<-arrangeGrob(grobs=f5, ncol=1)
-ggsave(filename="analisis/results/figure5.pdf", f5, width=24, height=12)
+ggsave(filename="results/figure5.pdf", f5, width=24, height=12)
 
 # last, a test figure showing appendix figure 1, but per city
 data_SALID1<-deaths %>%
@@ -1252,7 +1255,7 @@ ggplot(data_SALID1, aes(x=date, y=rate, color=type)) +
     #caption = "*First case detected on week 11",
     y="Mortality Rate per 100,000", x="", color="")+
   facet_wrap(~city_link, nrow=3)
-ggsave("analisis/results/Appendix_Fig4.pdf", 
+ggsave("results/Appendix_Fig4.pdf", 
        height = 15, width = 20, scale = 1.2)
 
 # Sens window periods
@@ -1269,7 +1272,7 @@ ggplot(excess_sens_windows_fig, aes(x=time, y=value)) +
   labs(x="Year", y="Weekly Death Counts")+
   theme_k + theme(legend.position=c(.15, .85),legend.background = element_blank())+
   guides(color=guide_legend(nrow=2))
-ggsave("analisis/results/Appendix_Fig9.pdf", 
+ggsave("results/Appendix_Fig9.pdf", 
        height = 7.5, width = 14)
 # sens window periods by L1 (compare)
 excess_cumulative_l1_windows<-excess_sens_windows_l1 %>% 
@@ -1352,7 +1355,7 @@ excess_cumulative_l1_windows<-excess_sens_windows_l1 %>%
   pall<-arrangeGrob(grobs=list(f_rel_17, f_rel_18, 
                                f_abs_17, f_abs_18), ncol=2)
 }
-ggsave("analisis/results/Appendix_Fig10.pdf", pall, width=18, height=15)
+ggsave("results/Appendix_Fig10.pdf", pall, width=18, height=15)
 
 # sens analysis using empirical
 excess_cumulative_l1_empirical<-excess_empirical_l1 %>% 
@@ -1414,4 +1417,7 @@ comp_abs<-ggplot(excess_cumulative_l1_empirical, aes(x=abs_gam, y=abs_emp)) +
        tag="B")+
   theme_k
 pall<-arrangeGrob(grobs=list(comp_rel, comp_abs), ncol=2)
-ggsave("analisis/results/Appendix_Fig11.pdf", pall, width=18, height=7.5)
+ggsave("results/Appendix_Fig11.pdf", pall, width=18, height=7.5)
+
+
+
